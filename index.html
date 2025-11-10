@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Carrito de Compras</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h2 { color: #333; }
+    .producto, .carrito-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+    button { margin-left: 5px; padding: 5px 10px; cursor: pointer; }
+    .container { display: flex; gap: 50px; }
+    .section { flex: 1; }
+  </style>
+</head>
+<body>
+  <h2>Entrega 3 - Programación Web 1</h2>
+  <p>Carrito de compras v3- Tienda Online</p>
+  <p>Profesor: Carlos Gonzalez | Estudiante: Fernando Fontana</p>
+
+  <div class="container">
+    <!-- Sección de productos -->
+    <div class="section">
+      <h3>Productos disponibles</h3>
+      <div id="productos-list"></div>
+    </div>
+
+    <!-- Sección de carrito -->
+    <div class="section">
+      <h3>Carrito</h3>
+      <div id="carrito-list"></div>
+      <p id="total"></p>
+      <button id="vaciar-carrito">Vaciar Carrito</button>
+    </div>
+  </div>
+
+  <script src="carrito.js"></script>
+</body>
+</html>
