@@ -1,9 +1,9 @@
 // ==============================
-// 🛒 Carrito de Compras v4
-// Persistencia + Eventos modernos + Debounce
+// 🛒 Carrito de Compras v4.1
+// Persistencia + Debounce selectivo + Eventos modernos
 // ==============================
 
-// Datos iniciales
+// Recupera datos previos o usa valores iniciales
 let productos = JSON.parse(localStorage.getItem("productos")) || [
   { id: 1, nombre: "Filtro de aceite", precio: 3500, stock: 8 },
   { id: 2, nombre: "Bujía NGK", precio: 4200, stock: 12 },
@@ -15,7 +15,7 @@ let productos = JSON.parse(localStorage.getItem("productos")) || [
 let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
 // ==============================
-// 🔁 Funciones de renderizado
+// 🔁 Renderizado dinámico
 // ==============================
 function renderProductos() {
   const lista = document.getElementById("productos-list");
@@ -62,7 +62,7 @@ function guardarDatos() {
 }
 
 // ==============================
-// ⚙️ Lógica del carrito
+// 🧠 Lógica del carrito
 // ==============================
 function agregarAlCarrito(id) {
   const producto = productos.find(p => p.id === id);
@@ -102,9 +102,9 @@ function eliminarProducto(id) {
 }
 
 // ==============================
-// 🕒 Utilidad: debounce
+// ⏳ Utilidad debounce (para limitar clicks rápidos)
 // ==============================
-function debounce(fn, delay = 4250) {
+function debounce(fn, delay = 250) {
   let timer;
   return (...args) => {
     clearTimeout(timer);
@@ -112,23 +112,26 @@ function debounce(fn, delay = 4250) {
   };
 }
 
+// ✅ Versión debounced solo en funciones que reciben eventos humanos rápidos
+const agregarDebounced = debounce(agregarAlCarrito, 250);
+const modificarDebounced = debounce(modificarCantidad, 150);
+
 // ==============================
-// 🧩 Eventos globales
+// 🧩 Eventos globales del documento
 // ==============================
 document.addEventListener("click", e => {
   if (e.target.classList.contains("btn-agregar")) {
-    const id = Number(e.target.dataset.id);
-    debounce(() => agregarAlCarrito(id))();
+    agregarDebounced(Number(e.target.dataset.id));
   }
 
   if (e.target.classList.contains("btn-modificar")) {
     const id = Number(e.target.dataset.id);
     const cambio = Number(e.target.dataset.cambio);
-    modificarCantidad(id, cambio);
+    modificarDebounced(id, cambio);
   }
 
   if (e.target.classList.contains("btn-eliminar")) {
-    eliminarProducto(Number(e.target.dataset.id));
+    eliminarProducto(Number(e.target.dataset.id)); // no debounce, acción única
   }
 });
 

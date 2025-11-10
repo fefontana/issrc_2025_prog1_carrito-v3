@@ -110,3 +110,88 @@ Resultado
 ✅ Usa buenas prácticas JS modernas.
 
 ✅ Listo para evolución modular (por ejemplo: productos.js, carrito.js, utils.js).
+
+
+ANEXO
+
+
+Aplicacion de debounce... **pero con criterio selectivo** 👇
+
+Vamos a verlo en detalle, porque no todas las funciones se benefician del `debounce`, y aplicarlo mal puede hasta *empeorar* la UX.
+
+---
+
+## 🧠 Qué hace `debounce` exactamente
+
+* “Retrasa” la ejecución de una función hasta que **deja de ser invocada** por un tiempo determinado.
+* Sirve cuando hay **múltiples eventos repetitivos** que no deben ejecutarse todos.
+* Ejemplo clásico: escribir en un input, hacer scroll o clickear muchas veces seguidas.
+
+---
+
+## ⚙️ En tu carrito actual
+
+### 🔹 Funciones que *sí* se benefician de `debounce`
+
+| Función               | Motivo                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `agregarAlCarrito()`  | Puede dispararse múltiples veces si el usuario hace clic rápido → riesgo de duplicar.                            |
+| `modificarCantidad()` | También puede activarse rápido (➕/➖), útil si no querés que se procesen muchos cambios seguidos.                 |
+| `eliminarProducto()`  | Rara vez se clickea muchas veces, pero podría prevenir errores si el DOM no se actualiza instantáneamente.       |
+| `vaciarCarrito()`     | Generalmente no hace falta, pero se podría proteger con un `confirm` + bloqueo temporal (mejor UX que debounce). |
+
+---
+
+### 🔹 Funciones que **NO** conviene aplicar `debounce`
+
+| Función                                         | Motivo                                                                                                                                                   |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `renderProductos()` / `renderCarrito()`         | Son llamadas sincronizadas por tu lógica interna, no dependen de input humano. Aplicar debounce haría que la UI se actualice tarde o de forma desfasada. |
+| `guardarDatos()`                                | Se ejecuta después de cada render; retrasarlo puede provocar pérdida de estado si el usuario cierra rápido la página.                                    |
+| `eliminarProducto()` (si se llama internamente) | Ya se ejecuta como parte de otra acción, y no tiene sentido retrasarla.                                                                                  |
+
+---
+
+## 🧩 Recomendación práctica
+
+Usá `debounce` **solo en las funciones que responden directamente a eventos del usuario**, y en particular, donde **el usuario puede repetir el mismo evento muy rápido**.
+
+Así, la versión más eficiente sería:
+
+```js
+// Crear una única versión "debounced" de agregar y modificar
+const agregarDebounced = debounce(agregarAlCarrito, 250);
+const modificarDebounced = debounce(modificarCantidad, 150);
+
+// Luego en el event listener
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("btn-agregar")) {
+    agregarDebounced(Number(e.target.dataset.id));
+  }
+
+  if (e.target.classList.contains("btn-modificar")) {
+    const id = Number(e.target.dataset.id);
+    const cambio = Number(e.target.dataset.cambio);
+    modificarDebounced(id, cambio);
+  }
+
+  if (e.target.classList.contains("btn-eliminar")) {
+    eliminarProducto(Number(e.target.dataset.id)); // sin debounce
+  }
+});
+```
+
+💬 **Ventaja:**
+
+* Evita clicks masivos → sin sobrecarga ni errores de stock.
+* No ralentiza las actualizaciones visuales innecesariamente.
+* Mejora la fluidez general sin perder sincronía con el DOM.
+
+---
+
+## 🧱 Tip adicional
+
+Si en el futuro tuvieras un **renderizado más costoso** (por ejemplo con muchas tarjetas o imágenes), ahí sí convendría aplicar `debounce` o incluso `throttle` al render.
+
+---
+
